@@ -14,7 +14,7 @@ const net = require('net');
 const client = net.createConnection(
     {
     host:"127.0.0.1",
-    port:8088
+    port:8099
     },
     ()=>{
         console.log('connected to server!');
@@ -23,13 +23,17 @@ const client = net.createConnection(
         let request = new Request({
             method:'POST',
             host: '127.0.0.1',
-            port: '8088',
+            port: '8099',
             path: '/',
+            headers:{
+                ["X-Foo2"]:"custom"
+            },
             body: {
                 name:'winter'
             }
         });
         console.log(request.toString());
+        client.write(request.toString());
     }
 );
 
@@ -55,7 +59,7 @@ class Request{
         this.body = options.body || {};
         this.headers = options.headers || {};
         if(!this.headers["Content-Type"]){
-            this.headers["Content-type"] = "application/x-www-form-urlencoded"
+            this.headers['Content-Type'] = "application/x-www-form-urlencoded";
         }
         if(this.headers["Content-Type"] === "application/json"){
             this.bodyText = JSON.stringify(this.body);
@@ -66,10 +70,9 @@ class Request{
     }
     toString(){
         return `${this.method} ${this.path} HTTP/1.1\r
-        ${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r
-        \r
-        ${this.bodyText}
-        `;
+${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r
+\r
+${this.bodyText}`;
     }
     open(method,url){}
     send(){}

@@ -3,7 +3,7 @@ const http = require("http");
 const server = http.createServer(
     (req,res)=>{
         console.log("request resevied");
-        console.log(req);
+        console.log(req.headers);
         res.setHeader('Content-Type','text/html');
         res.setHeader('X-Foo','bar');
         res.writeHead(200,{'Content-Type':'text/plain'});
@@ -11,4 +11,4 @@ const server = http.createServer(
     }
 );
 
-server.listen(8088);
+server.listen(8099);
