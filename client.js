@@ -18,10 +18,7 @@ class Request {
         this.headers["Content-length"] = this.bodyText.length;
     }
     toString() {
-        return `${this.method} ${this.path} HTTP/1.1\r
-        ${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r
-        \r
-        ${this.bodyText}`;
+        return `${this.method} ${this.path} HTTP/1.1\r\n${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r\n\r\n${this.bodyText}`;
     }
     open(method, url) { }
     send(connection) {
@@ -65,8 +62,8 @@ void async function (){
         }
     });
     
-    let response = await request.send();
-    console.log(response);
+   let response = await request.send();
+   console.log(response);
 }();
 
 
