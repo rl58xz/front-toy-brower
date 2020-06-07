@@ -1,4 +1,6 @@
+const parse = require('./parser');
 const net = require('net');
+
 class Request {
     constructor(options) {
         this.method = options.method || "GET";
@@ -168,8 +170,8 @@ class TrunkedBodyParser{
                 }
                 this.current = this.WAITING_LENGTH_LINE_END;
             }else{
-                this.length *= 10;
-                this.length += char.charCodeAt(0) - '0'.charCodeAt(0);
+                this.length *= 16;
+                this.length += parseInt(char,16);
             }
         }
         else if(this.current === this.WAITING_LENGTH_LINE_END){
@@ -212,6 +214,7 @@ void async function (){
     });
     
    let response = await request.send();
+   let dom = parse.parseHTML(response.body);
    console.log(response);
 }();
 
