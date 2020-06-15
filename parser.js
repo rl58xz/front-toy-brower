@@ -1,10 +1,112 @@
 const EOF = Symbol("EOF");
+const css = require('css');
+
 let currentToken = null;
 let currentAttribute = null;
-let documentNode = [];
+let currentTextNode = null;
+let stack = [{
+    type:"document",
+    children:[]
+}];
+let rules = [];
+
+function match(element,selector){
+    if(element.attributes && elements[j].attributes.length && selector[0] === "#"){
+        for(let k = 0; k < elements[j].attributes.length; k++){
+            if(elements[j].attributes[k].name === "id" && elements[j].attributes[k].value === selector.slice(1)){
+                i++;
+            }
+        }
+    }
+    else if(element.attributes && elements[j].attributes.length && selector[0] === "."){
+        for(let k = 0; k < elements[j].attributes.length; k++){
+            if(elements[j].attributes[k].name === "class" && elements[j].attributes[k].value === selector.slice(1)){
+                i++;
+            }
+        }
+    }
+    else if(selector === element.tagName){
+        i++;
+    }
+}
+function computeCss(element){
+    var elements = stack.slice().reverse();
+
+    rules.forEach((item) => {
+        let selectors = item.selectors[0].split(" ").reverse();
+        if(!match(selectors[0],element)){
+            continue;
+        }
+        for(let i = 0, j = 0;i < selectors.length && j < elements.length;j++){
+            if(match(elements[j],selectors[i])) i++;
+            j++;
+        }
+        if(i >= selectors.length){
+            console.log(item);
+            console.log(element);
+        }
+    })
+}
 
 function emit(token){
-    if(token.type == "text") return;
+    let top = stack[stack.length-1];
+    if(token.type == "startTag"){
+
+        let element = {
+            type:"element",
+            tagName:"",
+            children:[],
+            attributes:[]
+        }
+
+        element.tagName = token.tagName;
+
+        for(let key in token){
+            if(key !== "type" && key !== "tagName"){
+                element.attributes.push({
+                    name:key,
+                    value:token[key]
+                })
+            }
+        }
+
+        computeCss(element);
+
+        top.children.push(element);
+
+        //element.parent = top;
+
+        if(!token.isSelfClosing){
+            stack.push(element);
+        }
+
+        currentTextNode = null;
+    }else if(token.type == "endTag"){
+        if(token.tagName != top.tagName){
+            throw new Error("aaa");
+        }else {
+            if(token.tagName === "style"){
+                addCssRules(top.children[0].content);
+            }
+            stack.pop();
+        }
+        currentTextNode = null;
+    }else if(token.type == "text"){
+        if(currentTextNode === null){
+            currentTextNode = {
+                type:"text",
+                content:""
+            }
+            top.children.push(currentTextNode);
+        }
+        currentTextNode.content += token.content;
+    }
+}
+
+function addCssRules(stylecontent){
+    let cssrules = css.parse(stylecontent);
+    rules.push(...cssrules.stylesheet.rules);
+    //console.log(JSON.stringify(rules,null,4));
 }
 
 function data(c){
@@ -202,5 +304,6 @@ module.exports.parseHTML = function parseHTML(html){
         state = state(c);
     }
     state = state(EOF);
-    //console.log(documentNode);
+    //console.log(JSON.stringify(stack,null,4));
+    return stack[0];
 }

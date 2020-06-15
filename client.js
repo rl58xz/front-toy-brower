@@ -1,5 +1,6 @@
 const parse = require('./parser');
 const net = require('net');
+const css = require('css');
 
 class Request {
     constructor(options) {
@@ -215,7 +216,7 @@ void async function (){
     
    let response = await request.send();
    let dom = parse.parseHTML(response.body);
-   //console.log(response.body);
+   //console.log(JSON.stringify(dom,null,4));
 }();
 
 
