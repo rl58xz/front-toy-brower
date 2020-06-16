@@ -1,6 +1,6 @@
 const EOF = Symbol("EOF");
 const css = require('css');
-
+const layout = require('./layout');
 let currentToken = null;
 let currentAttribute = null;
 let currentTextNode = null;
@@ -11,41 +11,76 @@ let stack = [{
 let rules = [];
 
 function match(element,selector){
-    if(element.attributes && elements[j].attributes.length && selector[0] === "#"){
-        for(let k = 0; k < elements[j].attributes.length; k++){
-            if(elements[j].attributes[k].name === "id" && elements[j].attributes[k].value === selector.slice(1)){
-                i++;
+    if(element.attributes && element.attributes.length && selector[0] === "#"){
+        for(let k = 0; k < element.attributes.length; k++){
+            if(element.attributes[k].name === "id" && element.attributes[k].value === selector.slice(1)){
+                return true;
             }
         }
     }
-    else if(element.attributes && elements[j].attributes.length && selector[0] === "."){
-        for(let k = 0; k < elements[j].attributes.length; k++){
-            if(elements[j].attributes[k].name === "class" && elements[j].attributes[k].value === selector.slice(1)){
-                i++;
+    if(element.attributes && element.attributes.length && selector[0] === "."){
+        for(let k = 0; k < element.attributes.length; k++){
+            if(element.attributes[k].name === "class" && element.attributes[k].value === selector.slice(1)){
+                return true;
             }
         }
     }
-    else if(selector === element.tagName){
-        i++;
+    if(selector === element.tagName){
+        return true;
     }
 }
+
+function weightcaculate(selectors){
+    var weight = [0,0,0,0];
+    if(!selectors.length) return weight;
+    selectors.forEach((item) => {
+        if(item[0] === "#") weight[1]++;
+        else if(item[0] === ".") weight[2]++;
+        else weight[3]++;
+    });
+    return weight;
+}
+
+function compareweight(w1,w2){
+    if(w1[0] !== w2[0]) return w2[0] > w1[0];
+    if(w1[1] !== w2[1]) return w2[1] > w2[1];
+    if(w1[2] !== w2[2]) return w2[2] > w2[2];
+    if(w1[3] !== w2[3]) return w2[3] > w2[3];
+    return true;
+}
+
 function computeCss(element){
     var elements = stack.slice().reverse();
-
-    rules.forEach((item) => {
-        let selectors = item.selectors[0].split(" ").reverse();
-        if(!match(selectors[0],element)){
+    if(!element.computedStyle){
+        element.computedStyle = {};
+    }
+    for(let rule of rules){
+        let selectors = rule.selectors[0].split(" ").reverse();
+        if(!match(element,selectors[0])){
             continue;
         }
-        for(let i = 0, j = 0;i < selectors.length && j < elements.length;j++){
-            if(match(elements[j],selectors[i])) i++;
-            j++;
+        let i = 1, j = 0;
+        while(i < selectors.length && j < elements.length){
+            if(match(elements[j++],selectors[i])) i++;
         }
         if(i >= selectors.length){
-            console.log(item);
-            console.log(element);
+            var weight = weightcaculate(selectors);
+            var computedStyle = element.computedStyle;
+            for(let declaration of rule.declarations){
+                if(!computedStyle[declaration.property]){
+                    computedStyle[declaration.property] = {};
+                }
+                if(!computedStyle[declaration.property].specificity){
+                    computedStyle[declaration.property].specificity = weight;
+                    computedStyle[declaration.property].value = declaration.value;
+                }else if(compareweight(computedStyle[declaration.property].specificity,weight)){
+                    computedStyle[declaration.property].specificity = weight;
+                    computedStyle[declaration.property].value = declaration.value;
+                }
+            }
         }
-    })
+    }
+    //console.log(element.computedStyle);
 }
 
 function emit(token){
@@ -88,6 +123,7 @@ function emit(token){
             if(token.tagName === "style"){
                 addCssRules(top.children[0].content);
             }
+            layout(top);
             stack.pop();
         }
         currentTextNode = null;
