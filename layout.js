@@ -129,5 +129,11 @@ module.exports = function layout(element){
         if(itemStyle[mainSize] === null){
             itemStyle[mainSize] = 0;
         }
+
+        if(itemStyle.flex){
+            flexLine.push(item);
+        }else if(style.flexWrap === 'nowrap' && isAutoMainSize){
+            mainSpace -= itemStyle[mainSize];
+        }
     }
 }
