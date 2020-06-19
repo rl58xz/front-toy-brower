@@ -34,20 +34,50 @@
                 let cell = document.createElement("div");
                 cell.classList.add("cell");
                 cell.innerText = pattern[i][j] == 2 ? "x" : pattern[i][j] == 1 ? "o" : "";
-                cell.addEventListener("click",() => move(j,i))
+                cell.addEventListener("click",() => move(j,i));
                 board.appendChild(cell);
             }
             board.appendChild(document.createElement("br"));
         }
     }
 
+    function check(){
+        console.log(pattern)
+        let i = 0,j = 0,flag = 0;
+        for(i = 0; i < 2; i++){
+            flag = 0;
+            for(j = 0; j < 2; j++){
+                if(pattern[i][j] !== color) flag++;
+            }
+            console.log(flag);
+            if(flag === 0) alert(color);
+        }
+        for(i = 0; i < 2; i++){
+            flag = 0;
+            for(j = 0; j < 2; j++){
+                if(pattern[j][i] !== color) flag++;
+            }
+            if(flag === 0) alert(color);
+        }
+        flag = 0;
+        for(i = 0; i < 2; i++){
+            if(pattern[i][i] !== color) flag++;
+        }
+        if(flag === 0) alert(color);
+        flag = 0;
+        for(i = 0; i < 2; i++){
+            if(pattern[i][2-i] !== color) flag++;
+        }
+        if(flag === 0) alert(color);
+    }
+
     function move(x,y){
         if(pattern[y][x] !== 0) return;
         pattern[y][x] = color;
+        check();
         color = 3 - color;
         show();
     }
     show();
-    console.log(pattern);
 
 </script>
