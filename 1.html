@@ -17,12 +17,12 @@
 
 <script>
     let pattern = [
+        [1,2,0],
         [0,1,0],
-        [0,0,0],
         [0,0,0]
     ];
 
-    let color = 1;
+    let color = 2;
 
     let pattern1 = [0,0,0,0,0,0,0,0,0];
 
@@ -41,40 +41,65 @@
         }
     }
 
-    function check(){
+    function check(pattern,color){
         let i = 0,j = 0,flag = 0;
         for(i = 0; i < 3; i++){
             flag = 0;
             for(j = 0; j < 3; j++){
                 if(pattern[i][j] !== color) flag++;
             }
-            if(flag === 0) alert(flag + ":" + color + ":1111111111111111");
+            if(flag === 0) return true;
         }
         for(i = 0; i < 3; i++){
             flag = 0;
             for(j = 0; j < 3; j++){
                 if(pattern[j][i] !== color) flag++;
             }
-            if(flag === 0) alert(flag + ":" + color + ":1111111111111111");
+            if(flag === 0) return true;
         }
         flag = 0;
         for(i = 0; i < 3; i++){
             if(pattern[i][i] !== color) flag++;
         }
-        if(flag === 0) alert(flag + ":" + color + ":1111111111111111");
+        if(flag === 0) return true;
         flag = 0;
         for(i = 0; i < 3; i++){
             if(pattern[i][2-i] !== color) flag++;
         }
-        if(flag === 0) alert(flag + ":" + color + ":1111111111111111");
+        if(flag === 0) return true;
+        return false;
     }
 
     function move(x,y){
         if(pattern[y][x] !== 0) return;
         pattern[y][x] = color;
-        check();
+        if(check(pattern,color)){
+            console.log(color === 2 ? "x is winner" : "o is winner");
+        }
         color = 3 - color;
         show();
+        if(willWin(pattern,color)){
+            console.log(color == 2 ? "x will win" : "o will win");
+        }
+    }
+
+    function clone(pattern){
+        return JSON.parse(JSON.stringify(pattern));
+    }
+
+    function willWin(pattern,color){
+        for(let i = 0; i < 3; i++){
+            for(let j = 0; j < 3; j++){
+                if(pattern[i][j] !==0){
+                    continue;
+                }
+                let tmp = clone(pattern);
+                tmp[i][j] = color;
+                if(check(tmp,color)){
+                    return true;
+                }
+            }
+        }
     }
     show();
 
