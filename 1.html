@@ -96,11 +96,42 @@
                 let tmp = clone(pattern);
                 tmp[i][j] = color;
                 if(check(tmp,color)){
-                    return true;
+                    return [i,j];
                 }
             }
         }
+        return null;
     }
+
+    function bestChioce(pattern,color){{
+        if(re = willWin(pattern,color)){
+            return {
+                point:re,
+                result:1
+            }
+        }
+        let point = [];
+        for(let i = 0; i < 3; i++){
+            for(let j = 0; j < 3; j++){
+                if(pattern[i][j] !==0){
+                    continue;
+                }
+                point = [i,j];
+                let tmp = clone(pattern);
+                tmp[i][j] = color;
+                if(-(bestChioce(tmp,color).result)){
+                    return{
+                        point:[i,j],
+                        result:1
+                    }
+                }
+            }
+        }
+        return {
+            point:[0,0],
+            result:0
+        };
+    }}
     show();
 
 </script>
